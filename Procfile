@@ -1,1 +1,1 @@
-web: daphne ecommerceApiProject.wsgi:application --bind 0.0.0.0:$PORT --log-file -
+web: daphne ecommerceApiProject.asgi:application --bind 0.0.0.0 --port ${PORT}
