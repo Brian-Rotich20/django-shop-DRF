@@ -1,7 +1,8 @@
 [phases.setup]
-nixpkgs = [
-  "python312",
-  "pkg-config",
-  "mysql",
-  "mariadb-connector-c"
-]
+nixpkgs = ["python3", "gcc", "libffi", "openssl", "postgresql_16.dev"]
+
+[phases.install]
+cmds = ["pip install --upgrade pip", "pip install -r requirements.txt"]
+
+[phases.start]
+cmds = ["daphne ecommerceApiProject.asgi:application --bind 0.0.0.0 --port ${PORT}"]
