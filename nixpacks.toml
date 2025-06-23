@@ -1,0 +1,7 @@
+[phases.setup]
+nixpkgs = [
+  "python312",
+  "pkg-config",
+  "mysql",
+  "mariadb-connector-c"
+]
