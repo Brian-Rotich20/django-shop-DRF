@@ -35,6 +35,10 @@ ALLOWED_HOSTS = ["*"]  # For development, this is fine
 CSRF_TRUSTED_ORIGINS = [
     "https://cecc-129-222-147-145.ngrok-free.app"
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://django-shop-drf-production.up.railway.app",
+]
+
 
 # Application definition
 
@@ -147,17 +151,23 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR/ "staticfiles"
-MEDIA_URL = 'media/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 STORAGES = {
-    # ...
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+        },
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-MEDIA_ROOT = BASE_DIR/'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
