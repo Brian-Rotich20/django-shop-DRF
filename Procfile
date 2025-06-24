@@ -1,2 +1,2 @@
-web: daphne ecommerceApiProject.asgi:application --bind 0.0.0.0 --port ${PORT}
+web: gunicorn ecommerceApiProject.asgi:application --bind 0.0.0.0 --port ${PORT}
  
