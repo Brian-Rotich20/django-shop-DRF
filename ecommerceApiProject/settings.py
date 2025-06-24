@@ -38,7 +38,10 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://django-shop-drf-production.up.railway.app",
 ]
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://django-shop-drf-production.up.railway.app",
+]
 
 # Application definition
 
@@ -49,11 +52,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'apiapp',
     'rest_framework',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
