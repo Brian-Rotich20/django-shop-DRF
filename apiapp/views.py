@@ -3,9 +3,10 @@ from django.conf import settings
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveAPIView # Retrieve single products
 from rest_framework import status
 from .models import Cart, CartItem, Category, Product, Review, Wishlist, Order, OrderItem, ProductRating
-from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, ProductListSerializer, ProductDetailSerializer, ReviewSerializer, WishlistSerializer
+from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, WishlistSerializer
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 
@@ -29,7 +30,9 @@ def product_detail(request, slug):
     serializer = ProductDetailSerializer(product)
     return Response(serializer.data)
 
-
+class ProductDetailView(RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 User = get_user_model()
 
 @api_view(["GET"])
