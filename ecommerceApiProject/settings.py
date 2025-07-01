@@ -104,17 +104,24 @@ PG_HOST = os.getenv("PG_HOST")
 PG_PORT = os.getenv("PG_PORT")
 
 # Use PostgreSQL if all required env vars are available, otherwise fallback to SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': PG_NAME,
-        'USER': PG_USER,
-        'PASSWORD': PG_PASSWORD,
-        'HOST': PG_HOST,
-        'PORT': PG_PORT,
+if all([PG_NAME, PG_USER, PG_PASSWORD, PG_HOST, PG_PORT]):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': PG_NAME,
+            'USER': PG_USER,
+            'PASSWORD': PG_PASSWORD,
+            'HOST': PG_HOST,
+            'PORT': PG_PORT,
+        }
     }
-}
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
