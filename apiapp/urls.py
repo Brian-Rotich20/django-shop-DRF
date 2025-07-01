@@ -10,13 +10,14 @@ urlpatterns = [
     path("category/<slug:slug>", views.category_detail, name="category_detail"),
     path("add_to_cart/", views.add_to_cart, name="add_to_cart"),
     path("update_cartitem_quantity/", views.update_cartitem_quantity, name="update_cartitem_quantity"),
+    path("get_cart_items/", views.get_cart_items, name="get_cart_items"),
     path("add_review/", views.add_review, name="add_review"),
     path("update_review/<int:pk>/", views.update_review, name="update_review"),
     path("delete_review/<int:pk>/", views.delete_review, name="delete_review"),
     path("delete_cartitem/<int:pk>/", views.delete_cartitem, name="delete_cartitem"),
     path("add_to_wishlist/", views.add_to_wishlist, name="add_to_wishlist"),
     path("search/", views.product_search, name="search"),
-     path('product/<int:pk>/', views.ProductDetailView.as_view(), name='product-detail'),
+     path('product/<int:pk>/', views.ProductDetailView.as_view(), name='product_detail'),
 
 
     path("create_checkout_session/", views.create_checkout_session, name="create_checkout_session"),

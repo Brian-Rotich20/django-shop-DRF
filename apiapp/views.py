@@ -63,6 +63,21 @@ def add_to_cart(request):
     serializer = CartSerializer(cart)
     return Response(serializer.data)
 
+
+@api_view(['GET'])
+def get_cart_items(request):
+    email = request.query_params.get('email')
+
+    try:
+        user = User.objects.get(email=email)
+        cart_items = Cart.objects.filter(user=user)
+        serializer = CartSerializer(cart_items, many=True)
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+
+ 
+    
 @api_view(["PUT"])
 def update_cartitem_quantity(request):
     cartitem_id = request.data.get("item_id")
