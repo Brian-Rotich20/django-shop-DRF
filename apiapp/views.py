@@ -9,6 +9,8 @@ from .models import Cart, CartItem, Category, Product, Review, Wishlist, Order, 
 from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, WishlistSerializer
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from .utils import lipa_na_mpesa
+from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
 # Create your views here.
@@ -371,4 +373,41 @@ def fulfill_checkout(session, cart_code):
                                              quantity=item.quantity)
     
     cart.delete()
+
+
+#lipa na mpesa view
+@csrf_exempt
+@api_view(['POST'])
+def mpesa_callback(request):
+    data = request.data
+    print("Callback:", data)
+
+    result_code = data['Body']['stkCallback']['ResultCode']
+    if result_code == 0:
+        # payment was successful
+        phone_number = data['Body']['stkCallback']['CallbackMetadata']['Item'][4]['Value']
+        amount = data['Body']['stkCallback']['CallbackMetadata']['Item'][0]['Value']
+        transaction_id = data['Body']['stkCallback']['CallbackMetadata']['Item'][1]['Value']
+
+        # (Optional) Link phone_number to cart if you're storing that
+
+        # Create order
+        order = Order.objects.create(
+            customer_email=f"{phone_number}@mpesa.com",  # or link via cart if you have it
+            amount=amount,
+            currency="KES",
+            status="Paid",
+            mpesa_transaction_id=transaction_id
+        )
+
+        # Link to cart if possible
+        # cart = Cart.objects.get(phone=phone_number)
+        # for item in cart.cartitems.all():
+        #     OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
+        # cart.delete()
+
+    else:
+        print("Payment failed or cancelled")
+
+    return Response({"message": "Callback received"})
 
