@@ -32,4 +32,5 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Start Daphne server
-CMD ["daphne", "ecommerceApiProject.asgi:application", "--bind", "0.0.0.0", "--port", "8000"]
+CMD ["gunicorn", "ecommerceApiProject.wsgi:application", "--bind", "0.0.0.0:8000"]
+
