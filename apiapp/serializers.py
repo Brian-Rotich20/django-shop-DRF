@@ -43,7 +43,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     
 
 class CartSerializer(serializers.ModelSerializer):
-    cart_items = CartItemSerializer(read_only = True, many = True)
+    cartitems  = CartItemSerializer(scowread_only = True, many = True)
     cart_total = serializers.SerializerMethodField()
     class Meta:
         model = Cart
@@ -176,5 +176,5 @@ class SimpleCartSerializer(serializers.ModelSerializer):
         fields = ["id", "cart_code", "num_of_items"]
         
     def get_num_of_items(self, cart):
-        num_of_items = sum(item.quantitu for item in cart.cart_items.all())
+        num_of_items = sum(item.quantity for item in cart.cart_items.all())
         return num_of_items
