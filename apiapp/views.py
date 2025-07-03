@@ -101,6 +101,20 @@ def add_to_cart(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+        # Added this create_cart view to create a cart if it doesn't exist
+@api_view(['POST'])
+def create_cart(request):
+    cart_code = request.data.get("cart_code")
+
+    if not cart_code:
+        return Response({"error": "cart_code is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    cart, created = Cart.objects.get_or_create(cart_code=cart_code)
+
+    return Response({
+        "message": "Cart created successfully",
+        "cart_code": cart.cart_code,
+    }, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
 def get_cart_items(request):
