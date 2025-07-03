@@ -124,14 +124,14 @@ else:
     }
 
     
-MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY')
-MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET')
-MPESA_SHORTCODE = config('MPESA_SHORTCODE')
-MPESA_PASSKEY = config('MPESA_PASSKEY')
-MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL')
+# MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY')
+# MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET')
+# MPESA_SHORTCODE = config('MPESA_SHORTCODE')
+# MPESA_PASSKEY = config('MPESA_PASSKEY')
+# MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL')
 
 
-# Password validation
+# # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
