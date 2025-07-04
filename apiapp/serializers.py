@@ -1,6 +1,9 @@
-from rest_framework import serializers
+from rest_framework import serializers 
 from django.contrib.auth import get_user_model
-from .models import Cart, Category, Order, OrderItem, Product, CartItem, ProductRating, Review, Wishlist, CustomerAddress
+from .models import Cart, CartItem, CustomerAddress, Order, OrderItem, Product, Category, ProductRating, Review, Wishlist
+
+
+
 
 class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,83 +11,20 @@ class ProductListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "slug", "image", "price"]
 
 
-class ProductDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id', 'name', 'description', 'price', 'slug', 'image']
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = '__all__'
-        
-class CategoryListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'image', 'slug']
-
-class CategoryDetailSerializer(serializers.ModelSerializer): 
-    products = ProductListSerializer(many=True, read_only=True)
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'image', 'products']
-
-
-class CartItemSerializer(serializers.ModelSerializer):
-    product = ProductListSerializer(read_only=True)
-    sub_total = serializers.SerializerMethodField()
-    class Meta:
-        model = CartItem
-        fields = ['id', 'product', 'quantity', "sub_total"]
-
-    def get_sub_total(self, CartItem):
-        total = CartItem.product.price * CartItem.quantity
-        return total
-    
-
-class CartSerializer(serializers.ModelSerializer):
-    cartitems  = CartItemSerializer(read_only = True, many = True)
-    cart_total = serializers.SerializerMethodField()
-    class Meta:
-        model = Cart
-        fields = ['id', 'cart_code', 'cartitems', 'cart_total']
-
-    def get_cart_total(self, cart):
-        items = cart.cart_items.all()
-        total = sum(item.quantity * item.product.price for item in items)
-        return total
-    
-
-class CartStatSerializer(serializers.ModelSerializer):
-    total_quantity = serializers.SerializerMethodField()
-    class Meta:
-        model = Cart
-        fields = ['id', 'cart_code', 'total_quantity']
-
-    def get_total_quantity(self, cart):
-        items = cart.cart_items.all()
-        total = sum(item.quantity for item in items)
-        return total
-    
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'profile_picture_url']
+        fields = ["id", "email", "username", "first_name", "last_name", "profile_picture_url"]
 
+    
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
-        model = Review
-        fields = [ 'id', 'user', 'rating', 'review', 'created', 'updated']
-
-
-class ProductReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductRating
-        fields = ['id', 'average_rating', 'total_reviews']
+        model = Review 
+        fields = ["id", "user", "rating", "review", "created", "updated"]
 
 
 class ProductRatingSerializer(serializers.ModelSerializer):
@@ -94,8 +34,11 @@ class ProductRatingSerializer(serializers.ModelSerializer):
 
 
 
+
+
 class ProductDetailSerializer(serializers.ModelSerializer):
-    # Newly Added 
+
+    # Newly Added
 
     reviews = ReviewSerializer(read_only=True, many=True)
     rating = ProductRatingSerializer(read_only=True)
@@ -107,14 +50,17 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     similar_products = serializers.SerializerMethodField()
 
+
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'slug', 'image', 'reviews', 'rating',
-                  'poor_review', 'fair_review', 'good_review', 'very_good_review', 
-                  'excellent_review', 'similar_products']
+        fields = ["id", "name", "description", "slug", "image", "price", "reviews", "rating", "similar_products", "poor_review", "fair_review", "good_review",
+                  "very_good_review", "excellent_review"]
         
-    def get_similar_products(self, products):
-        products = Product.objects.filter(category=products.category).exclude(id=products.id)
+
+    # Newly Added
+
+    def get_similar_products(self, product):
+        products = Product.objects.filter(category=product.category).exclude(id=product.id)
         serializer = ProductListSerializer(products, many=True)
         return serializer.data
     
@@ -137,29 +83,87 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     def get_excellent_review(self, product):
         excellent_review_count = product.reviews.filter(rating=5).count()
         return excellent_review_count
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "name", "image", "slug"]
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    products = ProductListSerializer(many=True, read_only=True)
+    class Meta:
+        model = Category
+        fields = ["id", "name", "image", "products"]
+
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer(read_only=True)
+    sub_total = serializers.SerializerMethodField()
+    class Meta:
+        model = CartItem 
+        fields = ["id", "product", "quantity", "sub_total"]
+
     
+    def get_sub_total(self, cartitem):
+        total = cartitem.product.price * cartitem.quantity 
+        return total
+
+
+
+class CartSerializer(serializers.ModelSerializer):
+    cartitems = CartItemSerializer(read_only=True, many=True)
+    cart_total = serializers.SerializerMethodField()
+    class Meta:
+        model = Cart 
+        fields = ["id", "cart_code", "cartitems", "cart_total"]
+
+    def get_cart_total(self, cart):
+        items = cart.cartitems.all()
+        total = sum([item.quantity * item.product.price for item in items])
+        return total
+    
+
+class CartStatSerializer(serializers.ModelSerializer): 
+    total_quantity = serializers.SerializerMethodField()
+    class Meta:
+        model = Cart 
+        fields = ["id", "cart_code", "total_quantity"]
+
+    def get_total_quantity(self, cart):
+        items = cart.cartitems.all()
+        total = sum([item.quantity for item in items])
+        return total
+
+
+
 
 
 class WishlistSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     product = ProductListSerializer(read_only=True)
     class Meta:
-        model = Wishlist
-        fields = ['id', 'user', 'product', 'created']
+        model = Wishlist 
+        fields = ["id", "user", "product", "created"]
 
 
+
+# NEW ADDED 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     class Meta:
         model = OrderItem
-        fields = ['id', 'quantity', 'product']
+        fields = ["id", "quantity", "product"]
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(read_only=True, many=True)
     class Meta:
-        model = Order
-        fields = ['id', 'stripe_checkout_id', 'amount', 'items', 'status', 'created_at']
+        model = Order 
+        fields = ["id", "stripe_checkout_id", "amount", "items", "status", "created_at"]
+
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
@@ -172,9 +176,9 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
 class SimpleCartSerializer(serializers.ModelSerializer):
     num_of_items = serializers.SerializerMethodField()
     class Meta:
-        model = Cart
+        model = Cart 
         fields = ["id", "cart_code", "num_of_items"]
-        
+
     def get_num_of_items(self, cart):
-        num_of_items = sum(item.quantity for item in cart.cart_items.all())
+        num_of_items = sum([item.quantity for item in cart.cartitems.all()])
         return num_of_items
