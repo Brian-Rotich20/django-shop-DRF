@@ -182,3 +182,12 @@ class SimpleCartSerializer(serializers.ModelSerializer):
     def get_num_of_items(self, cart):
         num_of_items = sum([item.quantity for item in cart.cartitems.all()])
         return num_of_items
+    
+
+
+
+    # Added product details page serializer
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'  # or list only the fields you want: ['id', 'name', 'price', ...]

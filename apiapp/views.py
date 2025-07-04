@@ -1,13 +1,13 @@
 import stripe 
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Cart, CartItem, Category, CustomerAddress, Order, OrderItem, Product, Review, Wishlist
-from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ReviewSerializer, SimpleCartSerializer, UserSerializer, WishlistSerializer
+from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, SimpleCartSerializer, UserSerializer, WishlistSerializer
 
 
 from django.http import HttpResponse
@@ -392,3 +392,11 @@ def product_in_cart(request):
     product_exists_in_cart = CartItem.objects.filter(cart=cart, product=product).exists()
 
     return Response({'product_in_cart': product_exists_in_cart})
+
+
+# Added product details page
+@api_view(['GET'])
+def product_detail_by_id(request, id):
+    product = get_object_or_404(Product, id=id)
+    serializer = ProductSerializer(product)
+    return Response(serializer.data)
