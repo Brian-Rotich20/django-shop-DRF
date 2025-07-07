@@ -190,5 +190,5 @@ STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
 
-# user aunthentication
-AUTH_USER_MODEL = 'apiapp.CustomUser'
+# # user aunthentication
+# AUTH_USER_MODEL = 'apiapp.CustomUser'
