@@ -1,7 +1,11 @@
 from rest_framework import serializers 
 from django.contrib.auth import get_user_model
 from .models import Cart, CartItem, CustomerAddress, Order, OrderItem, Product, Category, ProductRating, Review, Wishlist
-
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from .models import CustomUser
+import re
 
 
 
@@ -191,3 +195,110 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'  # or list only the fields you want: ['id', 'name', 'price', ...]
+
+#Added aunthentication from user 
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password_confirm = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'phone_number', 'username', 'password', 'password_confirm')
+        extra_kwargs = {
+            'email': {'required': False},
+            'phone_number': {'required': False},
+            'username': {'required': False}
+        }
+    
+    def validate(self, attrs):
+        # Ensure at least email or phone is provided
+        if not attrs.get('email') and not attrs.get('phone_number'):
+            raise serializers.ValidationError("Either email or phone number must be provided")
+        
+        # Check password confirmation
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError("Passwords do not match")
+        
+        # Validate phone number format if provided
+        if attrs.get('phone_number'):
+            phone_regex = r'^\+?1?\d{9,15}$'
+            if not re.match(phone_regex, attrs['phone_number']):
+                raise serializers.ValidationError("Invalid phone number format")
+        
+        return attrs
+    
+    def validate_email(self, value):
+        if value and CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email already exists")
+        return value
+    
+    def validate_phone_number(self, value):
+        if value and CustomUser.objects.filter(phone_number=value).exists():
+            raise serializers.ValidationError("User with this phone number already exists")
+        return value
+    
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        
+        # Generate username if not provided
+        if not validated_data.get('username'):
+            if validated_data.get('email'):
+                base_username = validated_data['email'].split('@')[0]
+            else:
+                base_username = f"user_{validated_data['phone_number'][-4:]}"
+            
+            # Ensure username is unique
+            username = base_username
+            counter = 1
+            while CustomUser.objects.filter(username=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+            validated_data['username'] = username
+        
+        user = CustomUser.objects.create_user(**validated_data)
+        return user
+
+
+class UserLoginSerializer(serializers.Serializer):
+    email_or_phone = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        email_or_phone = attrs.get('email_or_phone')
+        password = attrs.get('password')
+        
+        if email_or_phone and password:
+            # Try to find user by email first
+            user = None
+            if '@' in email_or_phone:
+                try:
+                    user = CustomUser.objects.get(email=email_or_phone)
+                except CustomUser.DoesNotExist:
+                    pass
+            else:
+                # Try to find by phone number
+                try:
+                    user = CustomUser.objects.get(phone_number=email_or_phone)
+                except CustomUser.DoesNotExist:
+                    pass
+            
+            if user:
+                # Authenticate using username (since that's what Django expects)
+                user = authenticate(username=user.username, password=password)
+                if user:
+                    if not user.is_active:
+                        raise serializers.ValidationError("User account is disabled")
+                    attrs['user'] = user
+                    return attrs
+            
+            raise serializers.ValidationError("Invalid credentials")
+        else:
+            raise serializers.ValidationError("Must include email/phone and password")
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'phone_number', 'profile_picture_url', 'date_joined')
+        read_only_fields = ('id', 'date_joined')

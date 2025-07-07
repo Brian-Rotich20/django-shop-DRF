@@ -7,7 +7,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Cart, CartItem, Category, CustomerAddress, Order, OrderItem, Product, Review, Wishlist
-from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, SimpleCartSerializer, UserSerializer, WishlistSerializer
+from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, SimpleCartSerializer, UserRegistrationSerializer, UserSerializer, WishlistSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import login
+from .models import CustomUser
 
 
 from django.http import HttpResponse
@@ -400,3 +406,89 @@ def product_detail_by_id(request, id):
     product = get_object_or_404(Product, id=id)
     serializer = ProductSerializer(product)
     return Response(serializer.data)
+
+# Added user authentication views
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    """
+    Register a new user with email or phone number
+    """
+    serializer = UserRegistrationSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        user = serializer.save()
+        
+        # Create token for the user
+        token, created = Token.objects.get_or_create(user=user)
+        
+        # Serialize user data
+        user_serializer = UserSerializer(user)
+        
+        return Response({
+            'message': 'User registered successfully',
+            'user': user_serializer.data,
+            'token': token.key
+        }, status=status.HTTP_201_CREATED)
+    
+    return Response({
+        'message': 'Registration failed',
+        'errors': serializer.errors
+    }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_user(request):
+    """
+    Login user with email/phone and password
+    """
+    serializer = UserLoginSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        user = serializer.validated_data['user']
+        
+        # Create or get token
+        token, created = Token.objects.get_or_create(user=user)
+        
+        # Serialize user data
+        user_serializer = UserSerializer(user)
+        
+        return Response({
+            'message': 'Login successful',
+            'user': user_serializer.data,
+            'token': token.key
+        }, status=status.HTTP_200_OK)
+    
+    return Response({
+        'message': 'Login failed',
+        'errors': serializer.errors
+    }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def logout_user(request):
+    """
+    Logout user by deleting their token
+    """
+    try:
+        # Delete the user's token
+        request.user.auth_token.delete()
+        return Response({
+            'message': 'Logout successful'
+        }, status=status.HTTP_200_OK)
+    except:
+        return Response({
+            'message': 'Logout failed'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_user_profile(request):
+    """
+    Get current user's profile
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+

@@ -32,8 +32,10 @@ urlpatterns = [
     path("product_in_wishlist", views.product_in_wishlist, name="product_in_wishlist"),
     path("get_cart/<str:cart_code>", views.get_cart, name="get_cart"),
     path("get_cart_stat", views.get_cart_stat, name="get_cart_stat"),
-    path("product_in_cart", views.product_in_cart, name="product_in_cart")
-
-
-
+    path("product_in_cart", views.product_in_cart, name="product_in_cart"),
+    path('auth/register/', views.register_user, name='register'),
+    path('auth/login/', views.login_user, name='login'),
+    path('auth/logout/', views.logout_user, name='logout'),
+    path('auth/profile/', views.get_user_profile, name='profile'),
 ]
+
