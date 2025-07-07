@@ -31,6 +31,7 @@ SECRET_KEY = 'django-insecure-eq&0j5_vuyk_ncc5os3$gf_yyrq6@v4f_it8e!@4w_pkoa54#h
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  # For development, this is fine
+ALLOWED_HOSTS = ['.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
     "https://cecc-129-222-147-145.ngrok-free.app"
@@ -191,3 +192,7 @@ AUTH_USER_MODEL = 'apiapp.CustomUser'
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
+
+
+# user aunthentication
+AUTH_USER_MODEL = 'apiapp.CustomUser'
