@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'apiapp',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -201,4 +202,4 @@ WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
 
 # # user aunthentication
-# AUTH_USER_MODEL = 'apiapp.CustomUser'
+AUTH_USER_MODEL = 'apiapp.CustomUser'
