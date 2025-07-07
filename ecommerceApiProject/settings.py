@@ -37,11 +37,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://cecc-129-222-147-145.ngrok-free.app"
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://django-shop-drf-production.up.railway.app",
+    "https://e-commerce-django-shop-drf.onrender.com",
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://django-shop-drf-production.up.railway.app",
+    "https://e-commerce-django-shop-drf.onrender.com",
 ]
 
 # Application definition
