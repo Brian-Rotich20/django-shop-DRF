@@ -25,25 +25,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-eq&0j5_vuyk_ncc5os3$gf_yyrq6@v4f_it8e!@4w_pkoa54#h'
-
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "insecure-dev-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  # For development, this is fine
-ALLOWED_HOSTS = ['.onrender.com']
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://cecc-129-222-147-145.ngrok-free.app"
-]
-CSRF_TRUSTED_ORIGINS = [
-    "https://e-commerce-django-shop-drf.onrender.com",
-]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://e-commerce-django-shop-drf.onrender.com",
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".onrender.com",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://cecc-129-222-147-145.ngrok-free.app",
+    "https://e-commerce-django-shop-drf.onrender.com",
+]
 # Application definition
 
 INSTALLED_APPS = [
