@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 from decouple import config #For Mpesa
 
@@ -95,6 +96,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Try to load PostgreSQL credentials from environment
+DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+}
 PG_NAME = os.getenv("PG_NAME")
 PG_USER = os.getenv("PG_USER")
 PG_PASSWORD = os.getenv("PG_PASSWORD")
@@ -114,13 +119,23 @@ if all([PG_NAME, PG_USER, PG_PASSWORD, PG_HOST, PG_PORT]):
         }
     }
 else:
+    # Use DATABASE_URL from Render or environment variable if set
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL', ''),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+
+# Fallback to SQLite if no PostgreSQL config found at all
+if not DATABASES['default']:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
-    }
-    
+    } 
 # MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY')
 # MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET')
 # MPESA_SHORTCODE = config('MPESA_SHORTCODE')
