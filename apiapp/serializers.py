@@ -196,6 +196,8 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'  # or list only the fields you want: ['id', 'name', 'price', ...]
 
+
+
 #Added aunthentication from user 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
