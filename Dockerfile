@@ -40,4 +40,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/ || exit 1
 
 # Start Daphne server
-CMD ["daphne", "ecommerceApiProject.asgi:application", "-b", "0.0.0.0", "-p", "8000"]
+CMD ["gunicorn ecommerceApiProject.wsgi:application --bind 0.0.0.0:$PORT"]
