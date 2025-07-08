@@ -120,7 +120,6 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
     
 # MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY')
 # MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET')
