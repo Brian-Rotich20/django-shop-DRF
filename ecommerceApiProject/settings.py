@@ -39,7 +39,7 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://cecc-129-222-147-145.ngrok-free.app",
-    "https://e-commerce-django-shop-drf.onrender.com",
+    "https://django-shop-drf.onrender.com",
 ]
 # Application definition
 
