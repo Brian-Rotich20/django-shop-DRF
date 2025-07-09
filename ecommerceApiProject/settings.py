@@ -43,6 +43,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://django-shop-drf.onrender.com",
 ]
 # Application definition
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_HEADERS = ['*']
+CORS_ALLOW_METHODS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
