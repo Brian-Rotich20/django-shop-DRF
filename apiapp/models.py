@@ -28,9 +28,7 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.email or self.username
 
-    # class Meta:
-    #     db_table = 'auth_user'
-
+   
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

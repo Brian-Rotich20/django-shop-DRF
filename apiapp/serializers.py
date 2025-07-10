@@ -287,7 +287,7 @@ class UserLoginSerializer(serializers.Serializer):
             
             if user:
                 # Authenticate using username (since that's what Django expects)
-                user = authenticate(username=user.username, password=password)
+                user = authenticate(username=user.email, password=password)
                 if user:
                     if not user.is_active:
                         raise serializers.ValidationError("User account is disabled")
