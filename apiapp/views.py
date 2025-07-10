@@ -463,7 +463,7 @@ def login_user(request):
     return Response({
         'message': 'Login failed',
         'errors': serializer.errors
-    }, status=status.HTTP_400_BAD_REQUEST)
+    }, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['POST'])
