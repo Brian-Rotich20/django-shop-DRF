@@ -531,6 +531,8 @@ def lipa_na_mpesa(request):
     phone = request.data.get("phone")  # format: 2547XXXXXXXX
     cart_code = request.data.get("cart_code")
 
+   
+
     if not phone or not cart_code:
         return Response({"error": "Phone and cart_code are required"}, status=400)
 
@@ -539,7 +541,10 @@ def lipa_na_mpesa(request):
     except Cart.DoesNotExist:
         return Response({"error": "Invalid cart code"}, status=404)
 
-    amount = sum(item.product.price * item.quantity for item in cart.cartitems.all())
+    USD_TO_KES = 140  # example fixed rate
+    amount_usd = sum(item.product.price * item.quantity for item in cart.cartitems.all())
+    amount_kes = int(amount_usd * USD_TO_KES)
+
     access_token = generate_mpesa_access_token()
     password, timestamp = get_lipa_na_mpesa_password()
 
@@ -553,7 +558,7 @@ def lipa_na_mpesa(request):
         "Password": password,
         "Timestamp": timestamp,
         "TransactionType": "CustomerPayBillOnline",
-        "Amount": int(amount),
+        "Amount": amount_kes,
         "PartyA": phone,
         "PartyB": settings.MPESA_SHORTCODE,
         "PhoneNumber": phone,
