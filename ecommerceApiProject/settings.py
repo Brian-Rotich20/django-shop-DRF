@@ -20,8 +20,6 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env_file = BASE_DIR / ".env"
-config = config(RepositoryEnv(env_file))
 
 
 # Quick-start development settings - unsuitable for production
