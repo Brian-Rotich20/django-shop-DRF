@@ -20,7 +20,7 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env_file = "/etc/secrets/.env"  # match the name you gave it on Render
+env_file = ".env"  
 config = config(RepositoryEnv(env_file))
 
 
