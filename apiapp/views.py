@@ -512,12 +512,18 @@ def get_lipa_na_mpesa_password():
     data_to_encode = settings.MPESA_SHORTCODE + settings.MPESA_PASSKEY + timestamp
     encoded = base64.b64encode(data_to_encode.encode())
     return encoded.decode('utf-8'), timestamp
-
 @api_view(['POST'])
 def lipa_na_mpesa(request):
     phone = request.data.get("phone")  # format: 2547XXXXXXXX
     cart_code = request.data.get("cart_code")
-    cart = Cart.objects.get(cart_code=cart_code)
+
+    if not phone or not cart_code:
+        return Response({"error": "Phone and cart_code are required"}, status=400)
+
+    try:
+        cart = Cart.objects.get(cart_code=cart_code)
+    except Cart.DoesNotExist:
+        return Response({"error": "Invalid cart code"}, status=404)
 
     amount = sum(item.product.price * item.quantity for item in cart.cartitems.all())
     access_token = generate_mpesa_access_token()
@@ -542,8 +548,24 @@ def lipa_na_mpesa(request):
         "TransactionDesc": "Payment for cart",
     }
 
-    res = requests.post("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", headers=headers, json=payload)
-    return Response(res.json())
+    res = requests.post(
+        "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+        headers=headers,
+        json=payload
+    )
+
+    try:
+        return Response(res.json(), status=res.status_code)
+    except Exception as e:
+        # Catch JSON decode error and show raw text
+        print("⚠️ Error decoding Safaricom response:")
+        print("Status Code:", res.status_code)
+        print("Raw Response:", res.text)
+
+        return Response({
+            "error": "Failed to decode Safaricom response",
+            "details": res.text
+        }, status=500)
 
 @csrf_exempt
 @api_view(["POST"])
