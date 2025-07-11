@@ -13,6 +13,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login
+import base64
+import requests
+from datetime import datetime
+from django.utils import timezone
+
+
+key = settings.MPESA_CONSUMER_KEY
+secret = settings.MPESA_CONSUMER_SECRET
+# etc.
 
 
 from django.http import HttpResponse
@@ -491,3 +500,77 @@ def get_user_profile(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
 
+
+# Mpesa integration
+def generate_mpesa_access_token():
+    url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    response = requests.get(url, auth=(settings.MPESA_CONSUMER_KEY, settings.MPESA_CONSUMER_SECRET))
+    return response.json()["access_token"]
+
+def get_lipa_na_mpesa_password():
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    data_to_encode = settings.MPESA_SHORTCODE + settings.MPESA_PASSKEY + timestamp
+    encoded = base64.b64encode(data_to_encode.encode())
+    return encoded.decode('utf-8'), timestamp
+
+@api_view(['POST'])
+def lipa_na_mpesa(request):
+    phone = request.data.get("phone")  # format: 2547XXXXXXXX
+    cart_code = request.data.get("cart_code")
+    cart = Cart.objects.get(cart_code=cart_code)
+
+    amount = sum(item.product.price * item.quantity for item in cart.cartitems.all())
+    access_token = generate_mpesa_access_token()
+    password, timestamp = get_lipa_na_mpesa_password()
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "BusinessShortCode": settings.MPESA_SHORTCODE,
+        "Password": password,
+        "Timestamp": timestamp,
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": int(amount),
+        "PartyA": 254708374149,
+        "PartyB": settings.MPESA_SHORTCODE,
+        "PhoneNumber": 254708374149,
+        "CallBackURL": settings.MPESA_CALLBACK_URL,
+        "AccountReference": cart_code,
+        "TransactionDesc": "Payment for cart",
+    }
+
+    res = requests.post("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", headers=headers, json=payload)
+    return Response(res.json())
+
+@csrf_exempt
+@api_view(["POST"])
+def mpesa_callback(request):
+    data = request.data
+    print("M-Pesa Callback Data:", data)
+
+    try:
+        result_code = data["Body"]["stkCallback"]["ResultCode"]
+        metadata = data["Body"]["stkCallback"].get("CallbackMetadata", {})
+        cart_code = data["Body"]["stkCallback"]["CheckoutRequestID"]  # or use AccountReference
+
+        if result_code == 0:
+            cart = Cart.objects.get(cart_code=cart_code)
+            order = Order.objects.create(
+                amount=sum(item.product.price * item.quantity for item in cart.cartitems.all()),
+                currency="KES",
+                customer_email="mpesa@user.com",
+                status="Paid"
+            )
+
+            for item in cart.cartitems.all():
+                OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
+
+            cart.delete()
+
+    except Exception as e:
+        print("Error processing callback:", e)
+
+    return Response({"message": "Callback received"}, status=200)
