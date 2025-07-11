@@ -38,6 +38,6 @@ urlpatterns = [
     path('auth/logout/', views.logout_user, name='logout'),
     path('auth/profile/', views.get_user_profile, name='profile'),
     path("lipa_na_mpesa/", views.lipa_na_mpesa, name="lipa_na_mpesa"),
-    path("mpesa-callback/", views.mpesa_callback, name="mpesa_callback"),v
+    path("mpesa-callback/", views.mpesa_callback, name="mpesa_callback"),
 ]
 

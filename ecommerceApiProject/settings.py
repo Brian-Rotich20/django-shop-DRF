@@ -12,14 +12,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from altair import Config
 import dj_database_url
 from dotenv import load_dotenv
-from decouple import config #For Mpesa
+from decouple import config, RepositoryEnv#For Mpesa
 
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+env_file = "/etc/secrets/.env"  # match the name you gave it on Render
+config = Config(RepositoryEnv(env_file))
 
 
 # Quick-start development settings - unsuitable for production
