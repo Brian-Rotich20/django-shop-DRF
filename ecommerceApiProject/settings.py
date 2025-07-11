@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-from altair import Config
 import dj_database_url
 from dotenv import load_dotenv
 from decouple import config, RepositoryEnv#For Mpesa
