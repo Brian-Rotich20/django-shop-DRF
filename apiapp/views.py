@@ -503,15 +503,29 @@ def get_user_profile(request):
 
 # Mpesa integration
 def generate_mpesa_access_token():
-    url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
-    response = requests.get(url, auth=(settings.MPESA_CONSUMER_KEY, settings.MPESA_CONSUMER_SECRET))
-    return response.json()["access_token"]
+    consumer_key = settings.MPESA_CONSUMER_KEY
+    consumer_secret = settings.MPESA_CONSUMER_SECRET
+    auth = (consumer_key, consumer_secret)
 
+    res = requests.get(
+        "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+        auth=auth
+    )
+
+    try:
+        return res.json()["access_token"]
+    except Exception as e:
+        print(" Failed to get access token")
+        print("Status:", res.status_code)
+        print("Response:", res.text)
+        raise e
+    
 def get_lipa_na_mpesa_password():
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     data_to_encode = settings.MPESA_SHORTCODE + settings.MPESA_PASSKEY + timestamp
     encoded = base64.b64encode(data_to_encode.encode())
     return encoded.decode('utf-8'), timestamp
+
 @api_view(['POST'])
 def lipa_na_mpesa(request):
     phone = request.data.get("phone")  # format: 2547XXXXXXXX
