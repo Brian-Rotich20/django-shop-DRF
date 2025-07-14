@@ -309,10 +309,20 @@ def existing_user(request, email):
 
 @api_view(['GET'])
 def get_orders(request):
-    email = request.query_params.get("email")
-    orders = Order.objects.filter(user_email=email)
-    serializer = OrderSerializer(orders, many=True)
-    return Response(serializer.data)
+    try:
+        email = request.query_params.get("email")
+        if not email:
+            return Response({"error": "Email is required"}, status=400)
+
+        orders = Order.objects.filter(customer_email__iexact=email)
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print("Error in get_orders:", error_trace)
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["POST"])
