@@ -184,3 +184,8 @@ class CustomerAddress(models.Model):
     def __str__(self):
         return f"{self.customer.email} - {self.street} - {self.city}"
 
+# models.py
+class PaymentRequest(models.Model):
+    cart_code = models.CharField(max_length=100, unique=True)
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)

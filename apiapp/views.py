@@ -6,7 +6,7 @@ from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Cart, CartItem, Category, CustomerAddress, Order, OrderItem, Product, Review, Wishlist
+from .models import Cart, CartItem, Category, CustomerAddress, Order, OrderItem, PaymentRequest, Product, Review, Wishlist
 from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, SimpleCartSerializer, UserLoginSerializer, UserRegistrationSerializer, UserSerializer, WishlistSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -310,7 +310,7 @@ def existing_user(request, email):
 @api_view(['GET'])
 def get_orders(request):
     email = request.query_params.get("email")
-    orders = Order.objects.filter(customer_email=email)
+    orders = Order.objects.filter(user_email=email)
     serializer = OrderSerializer(orders, many=True)
     return Response(serializer.data)
 
@@ -530,16 +530,21 @@ def get_lipa_na_mpesa_password():
 def lipa_na_mpesa(request):
     phone = request.data.get("phone")  # format: 2547XXXXXXXX
     cart_code = request.data.get("cart_code")
-
+    email = request.data.get("email") 
    
 
     if not phone or not cart_code:
-        return Response({"error": "Phone and cart_code are required"}, status=400)
+        return Response({"error": "Phone, email and cart_code are required"}, status=400)
 
     try:
         cart = Cart.objects.get(cart_code=cart_code)
     except Cart.DoesNotExist:
         return Response({"error": "Invalid cart code"}, status=404)
+
+    PaymentRequest.objects.update_or_create(
+        cart_code=cart_code,
+        defaults={"email": email}
+    )
 
     USD_TO_KES = 140  # example fixed rate
     amount_usd = sum(item.product.price * item.quantity for item in cart.cartitems.all())
@@ -599,10 +604,14 @@ def mpesa_callback(request):
 
         if result_code == 0:
             cart = Cart.objects.get(cart_code=cart_code)
+
+            payment_request = PaymentRequest.objects.get(cart_code=cart_code)
+            email = payment_request.email
+
             order = Order.objects.create(
                 amount=sum(item.product.price * item.quantity for item in cart.cartitems.all()),
                 currency="KES",
-                customer_email="mpesa@user.com",
+                customer_email=email,
                 status="Paid"
             )
 
@@ -610,6 +619,7 @@ def mpesa_callback(request):
                 OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
 
             cart.delete()
+            payment_request.delete()
 
     except Exception as e:
         print("Error processing callback:", e)
