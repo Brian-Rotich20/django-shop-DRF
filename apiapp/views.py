@@ -536,14 +536,14 @@ def get_lipa_na_mpesa_password():
     encoded = base64.b64encode(data_to_encode.encode())
     return encoded.decode('utf-8'), timestamp
 
+
 @api_view(['POST'])
 def lipa_na_mpesa(request):
-    phone = request.data.get("phone")  # format: 2547XXXXXXXX
+    phone = request.data.get("phone")
     cart_code = request.data.get("cart_code")
-    email = request.data.get("email") 
-   
+    email = request.data.get("email")
 
-    if not phone or not cart_code:
+    if not phone or not cart_code or not email:
         return Response({"error": "Phone, email and cart_code are required"}, status=400)
 
     try:
@@ -556,12 +556,16 @@ def lipa_na_mpesa(request):
         defaults={"email": email}
     )
 
-    USD_TO_KES = 140  # example fixed rate
+    USD_TO_KES = 140
     amount_usd = sum(item.product.price * item.quantity for item in cart.cartitems.all())
     amount_kes = int(amount_usd * USD_TO_KES)
 
-    access_token = generate_mpesa_access_token()
-    password, timestamp = get_lipa_na_mpesa_password()
+    try:
+        access_token = generate_mpesa_access_token()
+        password, timestamp = get_lipa_na_mpesa_password()
+    except Exception as e:
+        print("⚠️ Failed generating M-Pesa credentials:", str(e))
+        return Response({"error": "M-Pesa credentials error", "details": str(e)}, status=500)
 
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -582,20 +586,22 @@ def lipa_na_mpesa(request):
         "TransactionDesc": "Payment for cart",
     }
 
+    print("📤 Sending STK Push Payload:", json.dumps(payload, indent=2))
+
     res = requests.post(
         "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
         headers=headers,
         json=payload
     )
 
+    print("📡 Safaricom response:")
+    print("Status Code:", res.status_code)
+    print("Response:", res.text)
+
     try:
         return Response(res.json(), status=res.status_code)
     except Exception as e:
-        # Catch JSON decode error and show raw text
-        print("⚠️ Error decoding Safaricom response:")
-        print("Status Code:", res.status_code)
-        print("Raw Response:", res.text)
-
+        print("⚠️ Error decoding Safaricom response:", e)
         return Response({
             "error": "Failed to decode Safaricom response",
             "details": res.text
