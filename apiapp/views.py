@@ -1,3 +1,4 @@
+import json
 import stripe 
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render
@@ -538,7 +539,7 @@ def get_lipa_na_mpesa_password():
 
 
 @api_view(['POST'])
-def lipa_na_mpesa(request):
+def lipa_na_mpesa(request):  
     phone = request.data.get("phone")
     cart_code = request.data.get("cart_code")
     email = request.data.get("email")
@@ -564,7 +565,7 @@ def lipa_na_mpesa(request):
         access_token = generate_mpesa_access_token()
         password, timestamp = get_lipa_na_mpesa_password()
     except Exception as e:
-        print("⚠️ Failed generating M-Pesa credentials:", str(e))
+        print("Failed generating M-Pesa credentials:", str(e))
         return Response({"error": "M-Pesa credentials error", "details": str(e)}, status=500)
 
     headers = {
@@ -594,14 +595,14 @@ def lipa_na_mpesa(request):
         json=payload
     )
 
-    print("📡 Safaricom response:")
+    print("Safaricom response:")
     print("Status Code:", res.status_code)
     print("Response:", res.text)
 
     try:
         return Response(res.json(), status=res.status_code)
     except Exception as e:
-        print("⚠️ Error decoding Safaricom response:", e)
+        print("Error decoding Safaricom response:", e)
         return Response({
             "error": "Failed to decode Safaricom response",
             "details": res.text
@@ -616,7 +617,7 @@ def mpesa_callback(request):
     try:
         result_code = data["Body"]["stkCallback"]["ResultCode"]
         metadata = data["Body"]["stkCallback"].get("CallbackMetadata", {})
-        cart_code = data["Body"]["stkCallback"]["CheckoutRequestID"]  # or use AccountReference
+        cart_code = data["Body"]["stkCallback"]["AccountReference"]  
 
         if result_code == 0:
             cart = Cart.objects.get(cart_code=cart_code)

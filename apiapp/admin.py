@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, Category, CustomUser, CustomerAddress, Order, OrderItem, Product, ProductRating, Review, Wishlist
+from .models import Cart, CartItem, Category, CustomUser, CustomerAddress, Order, OrderItem, PaymentRequest, Product, ProductRating, Review, Wishlist
 from django.contrib.auth.admin import UserAdmin
 
 # Register your models here.
@@ -48,3 +48,7 @@ admin.site.register(Wishlist, WishlistAdmin)
 
 
 admin.site.register([Order, OrderItem, CustomerAddress])
+
+@admin.register(PaymentRequest)
+class PaymentRequestAdmin(admin.ModelAdmin):
+    list_display = ('cart_code', 'email', 'created_at')
