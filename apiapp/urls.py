@@ -39,5 +39,6 @@ urlpatterns = [
     path('auth/profile/', views.get_user_profile, name='profile'),
     path("lipa_na_mpesa/", views.lipa_na_mpesa, name="lipa_na_mpesa"),
     path("mpesa-callback/", views.mpesa_callback, name="mpesa_callback"),
+     path('payment_status/', views.payment_status, name='payment_status'),
 ]
 

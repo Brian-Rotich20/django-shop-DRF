@@ -607,7 +607,6 @@ def lipa_na_mpesa(request):
             "error": "Failed to decode Safaricom response",
             "details": res.text
         }, status=500)
-
 @csrf_exempt
 @api_view(["POST"])
 def mpesa_callback(request):
@@ -617,14 +616,14 @@ def mpesa_callback(request):
     try:
         result_code = data["Body"]["stkCallback"]["ResultCode"]
         metadata = data["Body"]["stkCallback"].get("CallbackMetadata", {})
-        cart_code = data["Body"]["stkCallback"]["AccountReference"]  
+        cart_code = data["Body"]["stkCallback"]["AccountReference"]
 
         if result_code == 0:
             cart = Cart.objects.get(cart_code=cart_code)
-
             payment_request = PaymentRequest.objects.get(cart_code=cart_code)
             email = payment_request.email
 
+            # ✅ Create the order
             order = Order.objects.create(
                 amount=sum(item.product.price * item.quantity for item in cart.cartitems.all()),
                 currency="KES",
@@ -635,10 +634,26 @@ def mpesa_callback(request):
             for item in cart.cartitems.all():
                 OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
 
+            # ✅ Update payment status instead of deleting
+            payment_request.status = "Paid"
+            payment_request.save()
+
             cart.delete()
-            payment_request.delete()
+
+        else:
+            PaymentRequest.objects.filter(cart_code=cart_code).update(status="Declined")
 
     except Exception as e:
         print("Error processing callback:", e)
 
     return Response({"message": "Callback received"}, status=200)
+
+#Added payment status view
+@api_view(["GET"])
+def payment_status(request):
+    cart_code = request.GET.get("cart_code")
+    try:
+        pr = PaymentRequest.objects.get(cart_code=cart_code)
+        return Response({"status": pr.status})
+    except PaymentRequest.DoesNotExist:
+        return Response({"status": "NotFound"}, status=404)
