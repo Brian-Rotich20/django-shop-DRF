@@ -8,10 +8,13 @@ class CustomUserAdmin(UserAdmin):
     list_display = ("username", "email", "first_name", "last_name")
 admin.site.register(CustomUser, CustomUserAdmin)
 
-
-
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "featured")
+    list_display = ("name", "price_in_ksh", "featured")
+
+    def price_in_ksh(self, obj):
+        return f"KSh {obj.price:,.2f}"  
+    price_in_ksh.short_description = 'Price (KSh)'  
+
 admin.site.register(Product, ProductAdmin)
 
 
