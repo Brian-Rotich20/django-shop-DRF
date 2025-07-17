@@ -93,25 +93,45 @@ def update_cartitem_quantity(request):
     return Response({"data": serializer.data, "message": "Cartitem updated successfully!"})
 
 
-
 @api_view(["POST"])
 def add_review(request):
-    
-    product_id = request.data.get("product_id")
-    email = request.data.get("email")
-    rating = request.data.get("rating")
-    review_text = request.data.get("review")
+    try:
+        print("DEBUG: Incoming review data:", request.data)
 
-    product = Product.objects.get(id=product_id)
-    user = User.objects.get(email=email)
+        product_id = request.data.get("product_id")
+        email = request.data.get("email")
+        rating = request.data.get("rating")
+        review_text = request.data.get("review")
 
-    if Review.objects.filter(product=product, user=user).exists():
-        return Response({"error": "You already dropped a review for this product"}, status=400)
+        if not all([product_id, email, rating, review_text]):
+            print("Missing one or more required fields.")
+            return Response({"error": "Missing required fields."}, status=400)
 
-    review  = Review.objects.create(product=product, user=user, rating=rating, review=review_text)
-    serializer = ReviewSerializer(review)
-    return Response(serializer.data)
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found."}, status=404)
 
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
+        if Review.objects.filter(product=product, user=user).exists():
+            return Response({"error": "You already submitted a review."}, status=400)
+
+        review = Review.objects.create(
+            product=product,
+            user=user,
+            rating=rating,
+            review=review_text
+        )
+
+        return Response({"success": "Review added."}, status=201)
+
+    except Exception as e:
+        print("🔥 Internal Server Error:", str(e))
+        return Response({"error": "Internal server error"}, status=500)
 
 @api_view(['PUT'])
 def update_review(request, pk):
