@@ -100,30 +100,51 @@ def add_review(request):
     rating = request.data.get("rating")
     review_text = request.data.get("review")
 
+    # Debug logs
+    print("Received data:", request.data)
+
+    # Basic validation
     if not all([product_id, email, rating, review_text]):
         return Response({"error": "Missing required fields."}, status=400)
 
+    try:
+        rating = int(rating)
+        if rating < 1 or rating > 5:
+            return Response({"error": "Rating must be between 1 and 5."}, status=400)
+    except ValueError:
+        return Response({"error": "Invalid rating value."}, status=400)
+
+    # Check if product exists
     try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
         return Response({"error": "Product not found."}, status=404)
 
+    # Check if user exists
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         return Response({"error": "User not found."}, status=404)
 
+    # Prevent duplicate reviews
     if Review.objects.filter(product=product, user=user).exists():
         return Response({"error": "You already submitted a review."}, status=400)
 
-    Review.objects.create(
-        product=product,
-        user=user,
-        rating=rating,
-        review=review_text
-    )
+    # Save the review
+    try:
+        review = Review.objects.create(
+            product=product,
+            user=user,
+            rating=rating,
+            review=review_text
+        )
+    except Exception as e:
+        print("Failed to save review:", str(e))
+        return Response({"error": "Failed to save review."}, status=500)
 
-    return Response({"success": "Review added."}, status=201)
+    # Serialize and return the new review
+    serializer = ReviewSerializer(review)
+    return Response(serializer.data, status=201)
 
 @api_view(['PUT'])
 def update_review(request, pk):
