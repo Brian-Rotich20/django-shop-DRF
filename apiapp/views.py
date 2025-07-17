@@ -95,43 +95,35 @@ def update_cartitem_quantity(request):
 
 @api_view(["POST"])
 def add_review(request):
+    product_id = request.data.get("product_id")
+    email = request.data.get("email")
+    rating = request.data.get("rating")
+    review_text = request.data.get("review")
+
+    if not all([product_id, email, rating, review_text]):
+        return Response({"error": "Missing required fields."}, status=400)
+
     try:
-        print("DEBUG: Incoming review data:", request.data)
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found."}, status=404)
 
-        product_id = request.data.get("product_id")
-        email = request.data.get("email")
-        rating = request.data.get("rating")
-        review_text = request.data.get("review")
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=404)
 
-        if not all([product_id, email, rating, review_text]):
-            print("Missing one or more required fields.")
-            return Response({"error": "Missing required fields."}, status=400)
+    if Review.objects.filter(product=product, user=user).exists():
+        return Response({"error": "You already submitted a review."}, status=400)
 
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return Response({"error": "Product not found."}, status=404)
+    Review.objects.create(
+        product=product,
+        user=user,
+        rating=rating,
+        review=review_text
+    )
 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=404)
-
-        if Review.objects.filter(product=product, user=user).exists():
-            return Response({"error": "You already submitted a review."}, status=400)
-
-        review = Review.objects.create(
-            product=product,
-            user=user,
-            rating=rating,
-            review=review_text
-        )
-
-        return Response({"success": "Review added."}, status=201)
-
-    except Exception as e:
-        print("🔥 Internal Server Error:", str(e))
-        return Response({"error": "Internal server error"}, status=500)
+    return Response({"success": "Review added."}, status=201)
 
 @api_view(['PUT'])
 def update_review(request, pk):
@@ -677,3 +669,15 @@ def payment_status(request):
         return Response({"status": pr.status})
     except PaymentRequest.DoesNotExist:
         return Response({"status": "NotFound"}, status=404)
+    
+
+#Added get_reviews view
+@api_view(['GET'])
+def get_reviews(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        reviews = Review.objects.filter(product=product)
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found."}, status=404)
