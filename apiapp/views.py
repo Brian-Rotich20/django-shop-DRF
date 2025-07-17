@@ -675,8 +675,8 @@ def payment_status(request):
 @api_view(['GET'])
 def get_reviews(request, product_id):
     try:
-        product = Product.objects.get(id=product_id)
-        reviews = Review.objects.filter(product=product)
+        # product = Product.objects.get(id=product_id)
+        reviews = Review.objects.filter(product_id=product_id)
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
     except Product.DoesNotExist:
