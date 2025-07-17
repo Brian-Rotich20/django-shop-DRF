@@ -3,7 +3,8 @@ import stripe
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q 
+from django.db.models import Avg
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -700,5 +701,34 @@ def get_reviews(request, product_id):
         reviews = Review.objects.filter(product_id=product_id)
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found."}, status=404)
+    
+#Added get_ratings view
+@api_view(['GET'])
+def get_rating(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        reviews = Review.objects.filter(product=product)
+
+        # Calculate average rating and total reviews
+        average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+        total_reviews = reviews.count()
+
+        # Rating breakdown
+        breakdown = {
+            "poor": reviews.filter(rating=1).count(),
+            "fair": reviews.filter(rating=2).count(),
+            "good": reviews.filter(rating=3).count(),
+            "very_good": reviews.filter(rating=4).count(),
+            "excellent": reviews.filter(rating=5).count(),
+        }
+
+        return Response({
+            "average_rating": round(average_rating, 1),
+            "total_reviews": total_reviews,
+            "breakdown": breakdown
+        })
+
     except Product.DoesNotExist:
         return Response({"error": "Product not found."}, status=404)
