@@ -310,10 +310,9 @@ class UserSerializer(serializers.ModelSerializer):
 class CompleteProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('full_name', 'address', 'profile_photo', ...)  # Add fields as needed
+        fields = ('phone_number',)  # Only allow phone number update
 
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.save()
         return instance

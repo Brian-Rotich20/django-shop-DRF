@@ -745,7 +745,7 @@ def complete_profile(request):
     if serializer.is_valid():
         serializer.save()
         return Response({
-            'message': 'Profile completed successfully',
+            'message': 'Phone number saved successfully.',
             'user': serializer.data
         })
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
