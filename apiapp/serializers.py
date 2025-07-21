@@ -304,3 +304,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('id', 'username', 'email', 'phone_number', 'profile_picture_url', 'date_joined')
         read_only_fields = ('id', 'date_joined')
+
+
+# Complete-profile serializer
+class CompleteProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('full_name', 'address', 'profile_photo', ...)  # Add fields as needed
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance

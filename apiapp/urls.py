@@ -42,5 +42,6 @@ urlpatterns = [
     path("lipa_na_mpesa/", views.lipa_na_mpesa, name="lipa_na_mpesa"),
     path("mpesa-callback/", views.mpesa_callback, name="mpesa_callback"),
      path('payment_status/', views.payment_status, name='payment_status'),
+     path('complete-profile/', views.complete_profile, name='complete-profile'),
 ]
 

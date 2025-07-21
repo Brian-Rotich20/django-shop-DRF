@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Cart, CartItem, Category, CustomerAddress, Order, OrderItem, PaymentRequest, Product, Review, Wishlist
-from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, SimpleCartSerializer, UserLoginSerializer, UserRegistrationSerializer, UserSerializer, WishlistSerializer
+from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, CategoryListSerializer, CompleteProfileSerializer, CustomerAddressSerializer, OrderSerializer, ProductListSerializer, ProductDetailSerializer, ProductSerializer, ReviewSerializer, SimpleCartSerializer, UserLoginSerializer, UserRegistrationSerializer, UserSerializer, WishlistSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -19,6 +19,7 @@ import base64
 import requests
 from datetime import datetime
 from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
 
 
 key = settings.MPESA_CONSUMER_KEY
@@ -732,3 +733,19 @@ def get_rating(request, product_id):
 
     except Product.DoesNotExist:
         return Response({"error": "Product not found."}, status=404)
+    
+
+
+
+#Complete profile view
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_profile(request):
+    serializer = CompleteProfileSerializer(request.user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'message': 'Profile completed successfully',
+            'user': serializer.data
+        })
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
