@@ -41,5 +41,5 @@ It supports all core e-commerce features and connects to a Next.js + Tailwind fr
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-backend-repo.git
+git clone https://github.com/Brian-Rotich20/django-shop-DRF.git
 cd your-backend-repo
