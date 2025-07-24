@@ -749,3 +749,11 @@ def complete_profile(request):
             'user': serializer.data
         })
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#similar products view
+@api_view(['GET'])
+def similar_products(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    serializer = ProductDetailSerializer(product, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
