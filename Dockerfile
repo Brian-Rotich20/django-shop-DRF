@@ -5,9 +5,12 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies - minimal for binary wheels
+# Install system dependencies (build + runtime)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
+    build-essential \
+    python3-dev \
+    libpq-dev \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -17,17 +20,14 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt /app/
 
-# Install Python dependencies using only binary wheels
+# Install Python dependencies (allow wheels or source builds)
 RUN pip install --upgrade pip --no-cache-dir && \
-    pip install --only-binary=all --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
 COPY . /app/
-# Install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Collect static files (only if needed)
+# Collect static files (optional)
 RUN python manage.py collectstatic --noinput || true
 
 # Create non-root user for security
@@ -38,9 +38,9 @@ USER app
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Health check (requires curl above)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/ || exit 1
 
-# Start Daphne server
-CMD ["gunicorn ecommerceApiProject.wsgi:application --bind 0.0.0.0:$PORT"]
+# Start Gunicorn server
+CMD ["gunicorn", "ecommerceApiProject.wsgi:application", "--bind", "0.0.0.0:8000"]
