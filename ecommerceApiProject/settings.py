@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "insecure-dev-key")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  # For development, this is fine
 ALLOWED_HOSTS = [
@@ -42,7 +42,7 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
      "http://localhost:3000",
     "https://cecc-129-222-147-145.ngrok-free.app",
-    "https://django-shop-drf.onrender.com",
+    "https://inova-shop.onrender.com",
 ]
 # Application definition
 CORS_ALLOW_ALL_ORIGINS = True
